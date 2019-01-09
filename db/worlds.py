@@ -1,8 +1,11 @@
+import worldMap
 import database
 import timestamps
 
+
 time = timestamps
 db = database
+worldMap = worldMap
 
 
 def read_world(id):
@@ -23,8 +26,9 @@ def get_world(name = None, projection = None):
         results = []
     
     for entity in query.fetch():
-        if name is None:
+        if name is not None:
             results = db.get_entity(entity)
+            results['map'] = worldMap.get_map(results['id'])
         else:
             results.append(db.get_entity(entity))
 
