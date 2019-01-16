@@ -1,15 +1,11 @@
-import timestamps
-import database
+from .database import get_client,get_entity, datastore
+from .timestamps import current_timestamp
 import uuid
 
-date = timestamps
-db = database
-
 def create_session(username):
-    ds = db.get_client()
-
+    ds = get_client()
     key = ds.key('Session')
-    entity = db.datastore.Entity(key=key)
+    entity = datastore.Entity(key=key)
     entity.update({
         'sessionID': str(uuid.uuid1()),
         'user': username,
@@ -19,28 +15,28 @@ def create_session(username):
     return entity
 
 def destroy_session(uuid):
-    ds = db.get_client()
+    ds = get_client()
     query = ds.query(kind = 'Session')
     query.add_filter('sessionID', '=', uuid)
     results = list(query.fetch())
     for result in results:
-        r = db.get_entity(result)
+        r = get_entity(result)
         key = ds.key('Session', int(r['id']))
         ds.delete(key)
 
 def destroy_all_user_sessions(username):
-    ds = db.get_client()
+    ds = get_client()
     query = ds.query(kind = 'Session')
     query.add_filter('user', '=', username)
     results = list(query.fetch())
 
     for result in results:
-        r = db.get_entity(result)
+        r = get_entity(result)
         key = ds.key('Session', int(r['id']))      
         ds.delete(key)
 
 def check_if_session_active(uuid):
-    ds = db.get_client()
+    ds = get_client()
     query = ds.query(kind = 'Session')
     query.add_filter('sessionID', '=', uuid)
     query.add_filter('status', '=', 'active')
@@ -53,7 +49,7 @@ def check_if_session_active(uuid):
         return True
 
 def get_username_from_session(uuid):
-    ds = db.get_client() 
+    ds = get_client() 
     query = ds.query(kind = 'Session')
     query.add_filter('sessionID', '=', uuid)
     result = list(query.fetch())

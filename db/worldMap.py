@@ -1,43 +1,43 @@
-import database
+from .database import get_client,get_entity, datastore
+from .timestamps import current_timestamp
 
-db = database
 
 def get_map(world):
-    ds = db.get_client()
+    ds = get_client()
     query = ds.query(kind = 'Map')
     query.add_filter('world', '=', world)
     results = []
     for entity in query.fetch():
-        results.append(db.get_entity(entity))
+        results.append(get_entity(entity))
 
     return results
 
 def read_square(id):
-    ds = db.get_client()
+    ds = get_client()
     key = ds.key('Map', int(id))
     result = ds.get(key)
-    return db.get_entity(result)
+    return get_entity(result)
 
 def update_sqare(square, id):
-    ds = db.get_client()
+    ds = get_client()
     key = ds.key('Map', int(id))
-    entity = db.datastore.Entity(
+    entity = datastore.Entity(
         key=key,
         )
     if 'id' in square:
         del square['id']
     entity.update(square)
     ds.put(entity)
-    return db.get_entity(entity)
+    return get_entity(entity)
     
 def create_map(world, size):
-    ds = db.get_client()
+    ds = get_client()
     i = 0
     map = []
     while i < size:
         i += 1
         key = ds.key('Map')
-        entity = db.datastore.Entity(
+        entity = datastore.Entity(
         key=key,
         )
         data = {}
@@ -46,6 +46,6 @@ def create_map(world, size):
         data['status'] = 'free'
         entity.update(data)
         ds.put(entity)
-        map.append(db.get_entity(entity))
+        map.append(get_entity(entity))
 
 
