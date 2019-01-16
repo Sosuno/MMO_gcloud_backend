@@ -8,6 +8,7 @@ def init_app(app):
 def get_client():
     return datastore.Client('solwit-pjatk-arc-2018-gr4')
 
+
 def get_entity(entity):
     if not entity:
         return None

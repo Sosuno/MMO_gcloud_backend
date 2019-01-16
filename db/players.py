@@ -1,12 +1,13 @@
-import database
-import timestamps
+#import database
+from .database import get_client,get_entity, datastore
+from .timestamps import current_timestamp
 
-time = timestamps
-db = database
+
+
 
 
 def get_player(userId, world):
-    ds = db.get_client()
+    ds = get_client()
     query = ds.query(kind = 'Player')
     query.add_filter('userId', '=', userId)
     query.add_filter('world', '=', world)
@@ -17,18 +18,18 @@ def get_player(userId, world):
     elif not result:
         return None
     r = result.pop()
-    return db.get_entity(r)
+    return get_entity(r)
 
 def player_read(id):
-    ds = db.get_client()
+    ds = get_client()
     key = ds.key('Player', int(id))
     results = ds.get(key)
-    return db.get_entity(results)
+    return get_entity(results)
 
 def player_create(data):
-    ds = db.get_client()
+    ds = get_client()
     key = ds.key('Player')
-    entity = db.datastore.Entity(
+    entity = datastore.Entity(
         key=key,
     )
     #TODO surowce i początkowy stan bazy - do ustalenia
@@ -39,19 +40,19 @@ def player_create(data):
     data['build2'] = 1
     data['build3'] = 1
     data['actionPoints'] = 10
-    data['lastLogin'] = time.current_timestamp()
+    data['lastLogin'] = current_timestamp()
     entity.update(data)
     ds.put(entity)
-    return db.get_entity(entity)
+    return get_entity(entity)
 
 def player_update(data,id):
-    ds = db.get_client()
+    ds = get_client()
     key = ds.key('Player', int(id))
-    entity = db.datastore.Entity(
+    entity = datastore.Entity(
         key=key,
         )
     if 'id' in data:
         del data['id']
     entity.update(data)
     ds.put(entity)
-    return db.get_entity(entity)
+    return get_entity(entity)
