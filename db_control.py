@@ -20,3 +20,7 @@ def register(data):
                 return newUser
         else:
                 return None
+
+def create_world(name, size = 25, capacity = 4):
+        world = worlds.create_world(name, size, capacity)
+        return world

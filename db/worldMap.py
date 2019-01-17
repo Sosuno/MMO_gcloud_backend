@@ -48,4 +48,6 @@ def create_map(world, size):
         ds.put(entity)
         map.append(get_entity(entity))
 
+    return map
+
 
