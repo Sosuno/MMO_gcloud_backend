@@ -9,7 +9,9 @@ def read_world(id):
     ds = get_client()
     key = ds.key('World', int(id))
     results = ds.get(key)
-    return get_entity(results)
+    world = get_entity(results)
+    world['map'] = get_map(world['id'])
+    return world
 
 
 def get_world(name = None, projection = None):

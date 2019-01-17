@@ -53,16 +53,42 @@ def create_world(world):
          world = db_control.create_world(world)
          return jsonify(newWorld = world)
     else:
-        return jsonify(msg = "No access sir"), 401
+        return jsonify(msg = "No access, sir"), 401
 
 @app.route("/game/<world>/init", methods = ['GET'])
 def init_world(world):
-    return True
+    user = request_check(request)
+    if user == -1:
+        return abort(401)
+    elif user == -2:
+        return jsonify(msg = "Spierdolilam cos?"), 500
+    world = db_control.worlds.read_world(world)
+    player = db_control.players.get_player(user['id'], world['id'])
+    if player is None:
+        player = join_world(world['id'], user, True)
+        initWorld = {}
+        initWorld['world'] = world
+        initWorld['player'] = player
+        #TODO not working
+    return jsonify(initWorld = initWorld)
 
 @app.route("/game/<world>/join", methods = ['GET'])
-def join_world():
-    return True
-
+def join_world(world, user = None, noCheck = False):
+    if not noCheck:
+        user = request_check(request)
+        if user == -1:
+            return abort(401)
+        elif user == -2:
+            return jsonify(msg = "Spierdolilam cos?"), 500
+        player = db_control.players.get_player(user['id'], world)
+        if player is not None:
+            init_world(world)
+    data = {}
+    data['username'] = user['username']
+    data['world'] = world
+    player = db_control.players.player_create(data)
+    return jsonify(newPlayer = player)
+    
 
 
 def request_check(request):
