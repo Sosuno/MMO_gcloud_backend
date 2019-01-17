@@ -40,6 +40,7 @@ def user_create(data):
     entity = datastore.Entity(
         key=key,
     )
+
     data['avatarURL'] = 'https://storage.googleapis.com/arc-mmo-game/avatars/avatar-placeholder.png'
     data['created'] = current_date()
     data['loginAttempt'] = 0
