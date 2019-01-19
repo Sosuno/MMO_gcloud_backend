@@ -33,7 +33,7 @@ def get_world(name = None, projection = None):
 
     return results
 
-def create_world(name, size = 25, capacity = 4):
+def create_world(name, size, capacity):
     ds = get_client()
     key = ds.key('World')
     entity = datastore.Entity(

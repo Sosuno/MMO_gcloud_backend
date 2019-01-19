@@ -33,12 +33,15 @@ def player_create(data):
         key=key,
     )
     #TODO surowce i początkowy stan bazy - do ustalenia
-    data['res1'] = 1000
-    data['res2'] = 1000
-    data['res3'] = 1000
-    data['build1'] = 1
-    data['build2'] = 1
-    data['build3'] = 1
+    data['deski'] = 100
+    data['kapsle'] = 100
+    data['naboje'] = 100
+    data['jagody'] = 100
+    data['tartak'] = 1
+    data['sejf'] = 1
+    data['sklad'] = 1
+    data['spizarnia'] = 1
+    data['bunkier'] = 1
     data['actionPoints'] = 10
     data['lastLogin'] = current_timestamp()
     entity.update(data)

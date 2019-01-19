@@ -34,7 +34,14 @@ def create_map(world, size):
     ds = get_client()
     i = 0
     map = []
+    cordX = 1
+    cordY = 0
     while i < size:
+        if cordY == 5:
+            cordY = 1
+            cordX += 1
+        else:
+            cordY += 1
         i += 1
         key = ds.key('Map')
         entity = datastore.Entity(
@@ -44,6 +51,9 @@ def create_map(world, size):
         data['world'] = world
         data['owner'] = 'None'
         data['status'] = 'free'
+        data['num'] = i
+        data['cordX'] = cordX
+        data['cordY'] = cordY
         entity.update(data)
         ds.put(entity)
         map.append(get_entity(entity))
