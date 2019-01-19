@@ -44,6 +44,7 @@ def create_world(name, size, capacity):
     data['name'] = name
     data['size'] = size
     data['capacity'] = capacity
+    data['players'] = 0
     data['map'] = None
     data['created'] = current_timestamp()
     data['endDate'] = None
@@ -54,3 +55,14 @@ def create_world(name, size, capacity):
     return world
 
     
+def update_world(world, id):
+    ds = get_client()
+    key = ds.key('World', int(id))
+    entity = datastore.Entity(
+        key=key,
+        )
+    if 'id' in world:
+        del world['id']
+    entity.update(world)
+    ds.put(entity)
+    return get_entity(entity)

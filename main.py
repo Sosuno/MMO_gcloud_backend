@@ -64,11 +64,9 @@ def init_world(world):
         return abort(401)
     elif user == -2:
         return jsonify(msg = "Spierdolilam cos"), 500
-    world = db_control.worlds.read_world(world)
-    player = db_control.players.get_player(user['id'], world['id'])
-    if player is None:
-        player = join_world(world['id'], user, True)
-        
+    world = db_control.worlds.read_world(world) 
+    if db_control.players.get_player(user['id'], world) is None:
+        return jsonify(msg = "Not a player"), 406
     return jsonify(World = world)
 
 @app.route("/game/<world>/join", methods = ['POST'])
@@ -85,7 +83,10 @@ def join_world(world, user = None, noCheck = False):
     data = {}
     data['username'] = user['username']
     data['world'] = world
+    data['userId'] = user['id']
     player = db_control.players.player_create(data)
+    if player == -1:
+        return jsonify(msg = "World is full"), 406
     return jsonify(newPlayer = player)
 
 @app.route("/game/player/<world>", methods = ['GET'])

@@ -1,5 +1,6 @@
 from .database import get_client,get_entity, datastore
 from .timestamps import current_timestamp
+import re
 
 
 def get_map(world):
@@ -18,7 +19,19 @@ def read_square(id):
     result = ds.get(key)
     return get_entity(result)
 
-def update_sqare(square, id):
+def get_square_status(world, status = 'free'):
+    import re
+    w = int(re.search(r'\d+', world).group())
+    ds = get_client()
+    query = ds.query(kind = 'Map')
+    query.add_filter('status', '=', status)
+    query.add_filter('world', '=', w)
+    results = []
+    for entity in query.fetch():
+        results.append(get_entity(entity))
+    return results
+
+def update_square(square, id):
     ds = get_client()
     key = ds.key('Map', int(id))
     entity = datastore.Entity(
