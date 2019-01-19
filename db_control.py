@@ -4,6 +4,10 @@ def login(data):
     
     if data is None:
         return False
+    if data.get('username') is None:
+        return False
+    if data.get('password') is None:
+        return False
     if user.is_correct_user(data['username'], data['password']):
             session.destroy_all_user_sessions(data['username'])
             my_session = session.create_session(data['username'])
@@ -20,3 +24,7 @@ def register(data):
                 return newUser
         else:
                 return None
+
+def create_world(name, size = 25, capacity = 4):
+        world = worlds.create_world(name, size, capacity)
+        return world

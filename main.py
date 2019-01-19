@@ -17,27 +17,103 @@ def signin():
     if result == False:
         return jsonify(msg = "Wrong username or password"), 403
     else:
-        return result
+        return jsonify(session = result)
 
 @app.route("/join", methods = ['POST'])
 def join():
     content = request.get_json()
     if content is None:
                 return abort(400)
+    if content.get('username') is None:
+        return jsonify(msg = "No username"), 406
     user = controller.register(content)
     if user is None:
-        return jsonify("User already exists"), 403
+        return jsonify(msg = "User already exists"), 403
     elif user == -1:
-        return jsonify(msg = "No username"), 403
+        return jsonify(msg = "No username"), 406
     result = controller.login(content)
-    return result
+    return jsonify(session = result)
 
 @app.route("/game/worlds", methods = ['GET'])
 def worlds():
-    return True
+    user = request_check(request)
+    if user == -1:
+        return abort(401)
+    elif user == -2:
+        return jsonify(msg = "Spierdoliam cos"), 500
+    worlds = controller.worlds.get_world()
+    return jsonify(worldList = worlds)
 
-@app.route("/game/<world>/init", methods = ['GET'])
+@app.route("/game/create/<world>", methods = ['POST'])
+def create_world(world):
+    user = request_check(request)
+    if user == -1:
+        return abort(401)
+    elif user == -2:
+        return jsonify(msg = "Spierdoliam cos"), 500
+    if user['access'] == 'admin':
+         world = db_control.create_world(world)
+         return jsonify(newWorld = world)
+    else:
+        return jsonify(msg = "No access, sir"), 401
+
+@app.route("/game/worlds/<world>", methods = ['GET'])
 def init_world(world):
-    return True
+    user = request_check(request)
+    if user == -1:
+        return abort(401)
+    elif user == -2:
+        return jsonify(msg = "Spierdolilam cos"), 500
+    world = db_control.worlds.read_world(world) 
+    if db_control.players.get_player(user['id'], world) is None:
+        return jsonify(msg = "Not a player"), 406
+    return jsonify(World = world)
+
+@app.route("/game/<world>/join", methods = ['POST'])
+def join_world(world, user = None, noCheck = False):
+    if not noCheck:
+        user = request_check(request)
+        if user == -1:
+            return abort(401)
+        elif user == -2:
+            return jsonify(msg = "Spierdolilam cos"), 500
+        player = db_control.players.get_player(user['id'], world)
+        if player is not None:
+            return jsonify(msg = "Already in")
+    data = {}
+    data['username'] = user['username']
+    data['world'] = world
+    data['userId'] = user['id']
+    player = db_control.players.player_create(data)
+    if player == -1:
+        return jsonify(msg = "World is full"), 406
+    return jsonify(newPlayer = player)
+
+@app.route("/game/player/<world>", methods = ['GET'])
+def get_player(world):
+    user = request_check(request)
+    if user == -1:
+        return abort(401)
+    elif user == -2:
+        return jsonify(msg = "Spierdolilam cos"), 500
+    player = db_control.players.get_player(user['id'], world)
+    if player is None:
+        return abort(401)
+    return jsonify(player = player)
 
 
+def request_check(request):
+    uuid = None
+    if 'Authorization' not in request.headers:
+        return -1
+    uuid = request.headers.get('Authorization')
+    if uuid is None:
+        return -1
+    if not db_control.session.check_if_session_active(uuid):
+        return -1
+    
+    username = db_control.session.get_username_from_session(uuid)
+    user = db_control.user.get_user(username)
+    if user is None:
+        return -2
+    return user
