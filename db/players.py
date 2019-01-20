@@ -27,8 +27,6 @@ def player_read(id):
     key = ds.key('Player', int(id))
     results = ds.get(key)
     result = get_entity(results)
-    if 'userId' in result:
-        del result['userId']
     return result
 
 def player_create(data):
