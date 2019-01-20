@@ -135,7 +135,7 @@ def attack_square():
         return jsonify(msg = "No square id"), 406
     player = db_control.players.player_read(content.get('playerid'))
     status = db_control.worldMap.read_square(content.get('squareid'))
-    db_control.attack(player,status)
+    return jsonify(msg = db_control.attack(player,status))
     
 @app.route("/game/cron")
 def calculate_world():

@@ -33,17 +33,17 @@ def create_world(name, size = 25, capacity = 4):
 def attack(player,status):
         
     if player['actionPoints'] < 5:
-        return jsonify(msg = "Not enough action points")
+        return "Not enough action points"
     elif player['naboje'] < 100:
-        return jsonify(msg = "Not enough bullets")
+        return "Not enough bullets"
     else:
         player['naboje'] = player['naboje'] - 100
         player['actionPoints'] = player['actionPoints'] - 5
         players.player_update(player, player['id'])
          # todo - add attack action to cron
         if status == "free":
-            return jsonify(msg = "Taking over commenced. You used 5 action points.")
+            return "Taking over commenced. You used 5 action points."
         elif status == "occupied":
-            return jsonify(msg = "Attacking enemy territory commenced. You used 5 action points.")
+            return "Attacking enemy territory commenced. You used 5 action points."
         elif status == "city":
-            return jsonify(msg = "Attacking enemy city commenced. You used 5 action points.")
+            return "Attacking enemy city commenced. You used 5 action points."
