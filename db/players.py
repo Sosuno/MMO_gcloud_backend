@@ -35,6 +35,9 @@ def player_create(data):
         world['players'] = 0
     elif world['capacity'] == world['players']:
         return -1
+    freeSquares = get_square_status(data['world'])
+    if freeSquares == None:
+        return -1
     world['players'] = world['players'] + 1
     world = update_world(world, world['id'])
 
@@ -58,7 +61,6 @@ def player_create(data):
     ds.put(entity)
     player = get_entity(entity)
 
-    freeSquares = get_square_status(data['world'])
     base = random.choice(freeSquares)
     base['status'] = 'City'
     base['owner'] = player['id']
