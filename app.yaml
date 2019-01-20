@@ -3,6 +3,5 @@ entrypoint: gunicorn -b :$PORT main:app
 
 automatic_scaling:
   min_instances: 0
-  max_instances: 5
+  max_instances: 2
 
-instance_class: F2

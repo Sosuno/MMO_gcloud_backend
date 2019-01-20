@@ -32,7 +32,7 @@ def upgrade_building(playerId, buildingId):
         #pobranie obiektu z bazy danych po ID
         currentBuilding = buildings.building_read(buildingId)
         player = players.player_read(playerId)
-        upgradedBuilding = buildings.get_buildings(currentBuilding['name'],currentBuilding['lvl']+1) #jaki ma byc po upgradzie
+        upgradedBuilding = buildings.get_buildings(currentBuilding['name'],currentBuilding['lvl']+1).pop() #jaki ma byc po upgradzie
         #czy playera stac na budynek 
         #woodcost
         check={}
