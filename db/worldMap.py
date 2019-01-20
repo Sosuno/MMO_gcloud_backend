@@ -72,5 +72,3 @@ def create_map(world, size):
         map.append(get_entity(entity))
 
     return map
-
-

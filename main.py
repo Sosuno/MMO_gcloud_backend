@@ -65,8 +65,12 @@ def init_world(worldId):
         return abort(401)
     elif user == -2:
         return jsonify(msg = "Spierdolilam cos"), 500
+    id = None
     world = db_control.worlds.read_world(worldId) 
-    return jsonify(World = world)
+    player = db_control.players.get_player(user['id'], worldId)
+    if player is not None:
+        id = player['id']
+    return jsonify(World = world, playerId = id)
 
 @app.route("/game/<world>/join", methods = ['POST'])
 def join_world(world, user = None, noCheck = False):
@@ -78,7 +82,7 @@ def join_world(world, user = None, noCheck = False):
             return jsonify(msg = "Spierdolilam cos"), 500
         player = db_control.players.get_player(user['id'], world)
         if player is not None:
-            return jsonify(msg = "Already in")
+            return jsonify(msg = "Already in"), 401
     data = {}
     data['username'] = user['username']
     data['world'] = world
@@ -109,10 +113,9 @@ def get_player_profile(playerId):
         return abort(401)
     elif user == -2:
         return jsonify(msg = "Spierdolilam cos"), 500
-    w = int(re.search(r'\d+', playerId).group())
-    player = db_control.players.player_read(w)
+    player = db_control.players.player_read(playerId)
     if player is None:
-        return jsonify(msg = "I am potato", id = w)
+        return abort(406)
     returnPlayer = {}
     returnPlayer['username'] = player['username']
     returnPlayer['avatarURL'] = user['avatarURL']
@@ -124,6 +127,25 @@ def calculate_world():
 
 
     return None
+
+@app.route("/session", methods = [ 'GET' , 'DELETE' ])
+def sessions():
+    user = request_check(request)
+    if user == -1:
+        return abort(401)
+    elif user == -2:
+        return jsonify(msg = "Spierdolilam cos"), 500
+    uuid = request.headers.get('Authorization')
+    if request.method == 'GET':
+        if not db_control.session.check_if_session_active(uuid):
+            return jsonify(session = False)
+        else:
+            return jsonify(session = True)
+    else:
+        if not db_control.session.check_if_session_active(uuid):
+            return abort(401)
+        db_control.session.destroy_all_user_sessions(uuid)
+        return jsonify(msg = "Deleted")
 
 def request_check(request):
     uuid = None
@@ -140,3 +162,4 @@ def request_check(request):
     if user is None:
         return -2
     return user
+
