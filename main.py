@@ -2,6 +2,7 @@
 from flask import Flask, request, jsonify, session, abort
 from flask_cors import CORS
 import db_control
+import re
 app = Flask(__name__)
 CORS(app)
 
@@ -57,16 +58,14 @@ def create_world(world):
     else:
         return jsonify(msg = "No access, sir"), 401
 
-@app.route("/game/worlds/<world>", methods = ['GET'])
-def init_world(world):
+@app.route("/game/worlds/<worldId>", methods = ['GET'])
+def init_world(worldId):
     user = request_check(request)
     if user == -1:
         return abort(401)
     elif user == -2:
         return jsonify(msg = "Spierdolilam cos"), 500
-    world = db_control.worlds.read_world(world) 
-    if db_control.players.get_player(user['id'], world) is None:
-        return jsonify(msg = "Not a player"), 406
+    world = db_control.worlds.read_world(worldId) 
     return jsonify(World = world)
 
 @app.route("/game/<world>/join", methods = ['POST'])
@@ -98,9 +97,33 @@ def get_player(world):
         return jsonify(msg = "Spierdolilam cos"), 500
     player = db_control.players.get_player(user['id'], world)
     if player is None:
-        return abort(401)
+        return abort(406)
+    if 'userId' in player:
+        del player['userId']
     return jsonify(player = player)
 
+@app.route("/game/profile/<playerId>/", methods = ['GET'])
+def get_player_profile(playerId):
+    user = request_check(request)
+    if user == -1:
+        return abort(401)
+    elif user == -2:
+        return jsonify(msg = "Spierdolilam cos"), 500
+    w = int(re.search(r'\d+', playerId).group())
+    player = db_control.players.player_read(w)
+    if player is None:
+        return jsonify(msg = "I am potato", id = w)
+    returnPlayer = {}
+    returnPlayer['username'] = player['username']
+    returnPlayer['avatarURL'] = user['avatarURL']
+
+    return jsonify(player = returnPlayer)
+
+@app.route("/game/cron")
+def calculate_world():
+
+
+    return None
 
 def request_check(request):
     uuid = None

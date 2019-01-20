@@ -20,7 +20,7 @@ def read_square(id):
     return get_entity(result)
 
 def get_square_status(world, status = 'free'):
-    import re
+
     w = int(re.search(r'\d+', world).group())
     ds = get_client()
     query = ds.query(kind = 'Map')
