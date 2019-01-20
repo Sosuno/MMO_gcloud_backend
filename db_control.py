@@ -1,4 +1,5 @@
 from db import buildings, players, user, worldMap, worlds, timestamps, session, database
+from flask import jsonify
 
 def login(data):
     
@@ -28,3 +29,20 @@ def register(data):
 def create_world(name, size = 25, capacity = 4):
         world = worlds.create_world(name, size, capacity)
         return world
+
+def attack(player,status):
+        
+    if player['actionPoints'] < 5:
+        return jsonify(msg = "Not enough action points")
+    elif player['bullets'] < 100:
+        return jsonify(msg = "Not enough bullets")
+    else:
+        player['bullets'] -= 100
+        player['actionPoints'] -= 5
+         # todo - add attack action to cron
+        if status == "free":
+            return jsonify(msg = "Taking over commenced. You used 5 action points.")
+        elif status == "occupied":
+            return jsonify(msg = "Attacking enemy territory commenced. You used 5 action points.")
+        elif status == "city":
+            return jsonify(msg = "Attacking enemy city commenced. You used 5 action points.")
