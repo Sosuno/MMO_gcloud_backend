@@ -109,10 +109,9 @@ def get_player_profile(playerId):
         return abort(401)
     elif user == -2:
         return jsonify(msg = "Spierdolilam cos"), 500
-    w = int(re.search(r'\d+', playerId).group())
-    player = db_control.players.player_read(w)
+    player = db_control.players.player_read(playerId)
     if player is None:
-        return jsonify(msg = "I am potato", id = w)
+        return abort(406)
     returnPlayer = {}
     returnPlayer['username'] = player['username']
     returnPlayer['avatarURL'] = user['avatarURL']
