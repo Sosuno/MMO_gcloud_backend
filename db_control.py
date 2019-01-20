@@ -34,11 +34,12 @@ def attack(player,status):
         
     if player['actionPoints'] < 5:
         return jsonify(msg = "Not enough action points")
-    elif player['bullets'] < 100:
+    elif player['naboje'] < 100:
         return jsonify(msg = "Not enough bullets")
     else:
-        player['bullets'] -= 100
-        player['actionPoints'] -= 5
+        player['naboje'] = player['naboje'] - 100
+        player['actionPoints'] = player['actionPoints'] - 5
+        players.player_update(player, player['id'])
          # todo - add attack action to cron
         if status == "free":
             return jsonify(msg = "Taking over commenced. You used 5 action points.")
