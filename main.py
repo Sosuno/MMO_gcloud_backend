@@ -119,7 +119,6 @@ def get_player_profile(playerId):
 
     return jsonify(player = returnPlayer)
 
-
 @app.route("/game/player/world/attack", methods = ['POST'])
 def attack_square():
     content = request.get_json()
