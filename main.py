@@ -119,6 +119,35 @@ def get_player_profile(playerId):
 
     return jsonify(player = returnPlayer)
 
+
+@app.route("/game/player/world/attack", methods = ['POST'])
+def attack_square():
+    content = request.get_json()
+    if content is None:
+                return abort(400)
+    if content.get('playerid') is None:
+        return jsonify(msg = "No player id"), 406
+    if content.get('squareid') is None:
+        return jsonify(msg = "No square id"), 406
+    player = db_control.players.player_read(content.get('playerid'))
+    status = db_control.worldMap.read_square(content.get('squareid'))
+
+    if player['actionPoints'] < 5:
+        return "Not enough action points"
+    elif player['bullets'] < 100:
+        return "Not enough bullets"
+    else:
+        player['bullets'] -= 100
+        player['actionPoints'] -= 5
+         # todo - add attack action to cron
+        if status == "free":
+            return "Taking over commenced. You used 5 action points."
+        elif status == "occupied":
+            return "Attacking enemy territory commenced. You used 5 action points."
+        elif status == "city":
+            return "Attacking enemy city commenced. You used 5 action points."
+
+    
 @app.route("/game/cron")
 def calculate_world():
 
