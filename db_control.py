@@ -30,7 +30,7 @@ def create_world(name, size = 25, capacity = 4):
         return world
 def upgrade_building(playerId, buildingId):
         #pobranie obiektu z bazy danych po ID
-        currentBuilding = buildings.read_building(buildingId)
+        currentBuilding = buildings.building_read(buildingId)
         player = players.player_read(playerId)
         upgradedBuilding = buildings.get_buildings(currentBuilding['name'],currentBuilding['lvl']+1) #jaki ma byc po upgradzie
         #czy playera stac na budynek 
@@ -68,14 +68,6 @@ def upgrade_building(playerId, buildingId):
         sendToActonTable['action']='buildingUpgrade'
         sendToActonTable['world']=player['worldId']
         updatedplayer= players.player_update(player,player['id'])
-        #TODO wyslac sendtoaction 
         return updatedplayer, None
 
-
-
-
-        
-        
-              
-        
 

@@ -45,7 +45,7 @@ def update_building(data, id):
     ds.put(entity)
     return get_entity(entity)
 
-    def building_read(id):
+def building_read(id):
     ds = get_client()
     key = ds.key('Building', int(id))
     results = ds.get(key)
