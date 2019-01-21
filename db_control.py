@@ -47,7 +47,8 @@ def attack(player,square,bullets):
         players.player_update(player, player['id'])
 
         
-        data = {}
+        data = {'player1': '', 'square': '', 'world': '', 'bullets': '', 'status': '', 'action': ''}
+        
         data['player1'] = player['id']
         data['square'] = square['id']
         data['world'] = player['world']
