@@ -123,6 +123,30 @@ def get_player_profile(playerId):
 
     return jsonify(player = returnPlayer)
 
+@app.route("/game/player/world/attack", methods = ['POST'])
+def attack_square():
+    user = request_check(request)
+    if user == -1:
+        return abort(401)
+    elif user == -2:
+        return jsonify(msg = "Coś nie działa"), 500
+    content = request.get_json()
+    if content is None:
+                return abort(400)
+    if content.get('playerid') is None:
+        return jsonify(msg = "No player id"), 406
+    if content.get('squareid') is None:
+        return jsonify(msg = "No square id"), 406
+    if content.get('bullets') is None:
+        return jsonify(msg = "Bullet amount undefined"), 406
+    bullets = content.get('bullets')
+    player = db_control.players.player_read(content.get('playerid'))
+    square = db_control.worldMap.read_square(content.get('squareid'))
+    if int(player['world']) != int(square['world']):
+        return jsonify(msg = "Player is in world" + str(square['world']) + ", square is in " + str(player['world'])), 408
+
+    return jsonify(msg = db_control.attack(player,square,bullets))
+    
 @app.route("/game/cron")
 def calculate_world():
     

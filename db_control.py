@@ -1,4 +1,5 @@
 from db import buildings, players, user, worldMap, worlds, timestamps, session, database, actions
+from flask import jsonify
 
 def login(data):
     
@@ -28,6 +29,47 @@ def register(data):
 def create_world(name, size = 25, capacity = 4):
         world = worlds.create_world(name, size, capacity)
         return world
+
+
+def attack(player,square,bullets):
+        
+    status = square['status']
+
+    if player['actionPoints'] < 5:
+        return "Not enough action points"
+    elif player['naboje'] < 100:
+        return "Not enough bullets"
+    elif player['naboje'] < bullets:
+        return "Not enough bullets"
+    else:
+        player['naboje'] = player['naboje'] - bullets
+        player['actionPoints'] = player['actionPoints'] - 5
+        players.player_update(player, player['id'])
+
+        '''
+        data = {}
+        data['player1'] = player['ID']
+        data['square'] = square['ID']
+        data['world'] = player['world']
+        data['bullets'] = bullets
+        data['status'] = 'uncompleted'
+        '''
+
+         # todo - add attack action to cron
+        if status == "free":
+            #data['action'] = "take"
+            #actions.create_action(data)
+            return "Taking over commenced. You used 5 action points."
+        elif status == "occupied":
+            #data['action'] = "take over"
+            #actions.create_action(data)
+            return "Attacking enemy territory commenced. You used 5 action points."
+        elif status == "City":
+            #data['action'] = "attack"
+            #actions.create_action(data)
+            return "Attacking enemy city commenced. You used 5 action points."
+        else:
+            return "Unable to get field status"
 
 def upgrade_building(playerId, buildingId):
         #pobranie obiektu z bazy danych po ID
