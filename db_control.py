@@ -30,11 +30,13 @@ def create_world(name, size = 25, capacity = 4):
         world = worlds.create_world(name, size, capacity)
         return world
 
-def attack(player,status):
+def attack(player,status,bullets):
         
     if player['actionPoints'] < 5:
         return "Not enough action points"
     elif player['naboje'] < 100:
+        return "Not enough bullets"
+    elif player['naboje'] < bullets:
         return "Not enough bullets"
     else:
         player['naboje'] = player['naboje'] - 100
