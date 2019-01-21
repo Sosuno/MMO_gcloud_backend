@@ -44,15 +44,13 @@ def attack(player,square,bullets):
     else:
         player['naboje'] = player['naboje'] - bullets
         player['actionPoints'] = player['actionPoints'] - 5
-        players.player_update(player, player['id'])
-        pid = int(player['id'])
-        sid = int(square['id'])
-        wrl = int(player['world'])
+        player = players.player_update(player, player['id'])
+   
         data = {}
         
-        data['player1'] = pid
-        data['square'] = sid
-        data['world'] = wrl
+        data['player1'] = player['id']
+        data['square'] = square['id']
+        data['world'] = player['world']
         data['bullets'] = bullets
         data['status'] = 'uncompleted'
         
