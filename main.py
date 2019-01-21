@@ -134,7 +134,8 @@ def attack_square():
     if content.get('squareid') is None:
         return jsonify(msg = "No square id"), 406
     player = db_control.players.player_read(content.get('playerid'))
-    status = db_control.worldMap.read_square(content.get('squareid'))
+    statusSquare = db_control.worldMap.read_square(content.get('squareid'))
+    status = statusSquare['status']
     return jsonify(msg = db_control.attack(player,status))
     
 @app.route("/game/cron")
