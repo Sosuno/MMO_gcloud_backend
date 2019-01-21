@@ -47,3 +47,5 @@ def attack(player,status):
             return "Attacking enemy territory commenced. You used 5 action points."
         elif status == "city":
             return "Attacking enemy city commenced. You used 5 action points."
+        else:
+            return "Unable to get field status"
