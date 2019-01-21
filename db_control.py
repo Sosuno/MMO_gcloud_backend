@@ -81,7 +81,24 @@ def upgrade_building(playerId, buildingId):
         updatedplayer= players.player_update(player,player['id'])
         actions.create_action(sendToActonTable)
         return updatedplayer, None
+def generate_resources(playerId):
+        player = players.player_read(playerId)
 
+        tartak = buildings.building_read(player['tartakId'])
+        bunkier = buildings.building_read(player['bunkierId'])
+        bank = buildings.building_read(player['bankId'])
+        sklad = buildings.building_read(player['skladId'])
+        spizarnia= buildings.building_read(player['spizarniaId'])
+#trzeba dodac bonus za tereny
+        player['deski']=(player['deski']+tartak['income'])* bunkier['income']*((1+player['actionPoints']) * 0.12)
+        player['kapsle']=(player['kapsle']+bank['income'])* bunkier['income']*((1+player['actionPoints']) * 0.12)
+        player['naboje']=(player['naboje']+sklad['income'])* bunkier['income']*((1+player['actionPoints']) * 0.12)
+        player['jagody']=(player['jagody']+spizarnia['income'])* bunkier['income']*((1+player['actionPoints']) * 0.12)
+        updatedplayer= players.player_update(player,player['id'])
+        return updatedplayer
+
+
+        
 
 def create_buildings():
         data = {}
@@ -219,3 +236,7 @@ def create_buildings():
         data['income'] = 300
         
         buildings.create_building(data)
+
+       
+
+

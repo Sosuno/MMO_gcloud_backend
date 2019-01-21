@@ -182,3 +182,5 @@ def upgrade_building(playerId,buildingId):
         return jsonify(fail=updatingPlayersResources),406
     return jsonify(player = updatingPlayersResources)
 
+
+
