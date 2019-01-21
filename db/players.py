@@ -69,7 +69,7 @@ def player_create(data):
         del player['userId']
     return player
 
-def player_update(data,id):
+def player_update(data, id):
     ds = get_client()
     key = ds.key('Player', int(id))
     entity = datastore.Entity(

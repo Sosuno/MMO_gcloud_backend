@@ -1,4 +1,4 @@
-from db import buildings, players, user, worldMap, worlds, timestamps, session, database
+from db import buildings, players, user, worldMap, worlds, timestamps, session, database, actions
 
 def login(data):
     
@@ -33,11 +33,21 @@ def upgrade_building(playerId, buildingId):
         #pobranie obiektu z bazy danych po ID
         currentBuilding = buildings.building_read(buildingId)
         player = players.player_read(playerId)
+        if currentBuilding['lvl']==3:
+                return -1, None
+        if currentBuilding == None:
+                return -1, None
+        
+        if player == None:
+                return -1, None
         upgradedBuilding = buildings.get_buildings(currentBuilding['name'],currentBuilding['lvl']+1).pop() #jaki ma byc po upgradzie
+        
+       
         #czy playera stac na budynek 
         #woodcost
         check={}
         bool = False
+        #jezeli budynek jest na poziomie 3 to ma najwyzszy lvl
         if upgradedBuilding['woodCost']> player['deski']:
                 check['deski']='0'
                 bool= True
@@ -55,7 +65,7 @@ def upgrade_building(playerId, buildingId):
                 bool= True
         else:
                  check['actionPoints']='1'
-        #jezeli ktoregos surowca jest za malo
+        #jezeli ktoregos surowca jest za malo,albo budynek jest na najwyzszym poziomie
         if bool==True:
                 return check, -1
         #jezeli wszysto sie zgadza
@@ -67,8 +77,9 @@ def upgrade_building(playerId, buildingId):
         sendToActonTable['status']='uncompleted'
         sendToActonTable['building']=currentBuilding['name']
         sendToActonTable['action']='buildingUpgrade'
-        sendToActonTable['world']=player['worldId']
+        sendToActonTable['world']=player['world']
         updatedplayer= players.player_update(player,player['id'])
+        actions.create_action(sendToActonTable)
         return updatedplayer, None
 
 

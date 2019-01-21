@@ -164,7 +164,7 @@ def request_check(request):
     return user
 
 
-@app.route("/game/profile/<playerId>/<buildingId>/", methods = ['POST'])
+@app.route("/game/upgrade/<playerId>/<buildingId>/", methods = ['POST'])
 def upgrade_building(playerId,buildingId):
     #sprawdzenie czy regquest jest wyslany przez zalogowanego uzytkownika
     user = request_check(request)
@@ -172,8 +172,12 @@ def upgrade_building(playerId,buildingId):
         return abort(401)
     elif user == -2:
         return jsonify(msg = "Spierdolilam cos"), 500
+   
 
     updatingPlayersResources, lack= db_control.upgrade_building(playerId,buildingId)
+    if updatingPlayersResources == -1:
+        return abort(406)
+    
     if lack == -1:
         return jsonify(fail=updatingPlayersResources),406
     return jsonify(player = updatingPlayersResources)
