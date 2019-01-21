@@ -138,7 +138,7 @@ def attack_square():
     bullets = content.get('bullets')
     player = db_control.players.player_read(content.get('playerid'))
     square = db_control.worldMap.read_square(content.get('squareid'))
-    if player['world'] != square['world']:
+    if int(player['world']) != int(square['world']):
         return jsonify(msg = "Player is in world" + str(square['world']) + ", square is in " + str(player['world'])), 408
 
     return jsonify(msg = db_control.attack(player,square,bullets))
