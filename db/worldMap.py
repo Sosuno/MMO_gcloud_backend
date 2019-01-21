@@ -19,13 +19,15 @@ def read_square(id):
     result = ds.get(key)
     return get_entity(result)
 
-def get_square_status(world, status = 'free'):
+def get_square_status(world, status = 'free', owner = None):
 
     w = int(re.search(r'\d+', world).group())
     ds = get_client()
     query = ds.query(kind = 'Map')
     query.add_filter('status', '=', status)
     query.add_filter('world', '=', w)
+    if owner is not None:
+        query.add_filter('owner', '=', owner)
     results = []
     for entity in query.fetch():
         results.append(get_entity(entity))

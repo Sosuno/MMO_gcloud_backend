@@ -51,10 +51,15 @@ def player_create(data):
     data['naboje'] = 100
     data['jagody'] = 100
     data['tartak'] = 1
+    data['tartakId'] = 6571545078005760
     data['sejf'] = 1
+    data['sejfId'] = 6197949226811392
     data['sklad'] = 1
+    data['skladId'] = 6479330687320064
     data['spizarnia'] = 1
+    data['spizarniaId'] = 5798449991647232 
     data['bunkier'] = 1
+    data['bunkierId'] = 5259355528101888
     data['actionPoints'] = 10
     data['lastLogin'] = current_timestamp()
     entity.update(data)
@@ -80,3 +85,15 @@ def player_update(data,id):
     entity.update(data)
     ds.put(entity)
     return get_entity(entity)
+
+
+def get_players():
+    ds = get_client()
+    query = ds.query(kind = 'Player')
+
+    results = []
+    
+    for entity in query.fetch():
+            results.append(get_entity(entity))
+
+    return results
