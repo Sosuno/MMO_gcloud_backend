@@ -41,6 +41,8 @@ def attack(player,square,bullets):
         return "Not enough bullets"
     elif player['naboje'] < bullets:
         return "Not enough bullets"
+    elif player['id'] == square['owner']:
+        return "You cannot attack your own territory"
     else:
         player['naboje'] = player['naboje'] - bullets
         player['actionPoints'] = player['actionPoints'] - 5
