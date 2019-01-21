@@ -45,9 +45,9 @@ def attack(player,square,bullets):
         player['naboje'] = player['naboje'] - bullets
         player['actionPoints'] = player['actionPoints'] - 5
         players.player_update(player, player['id'])
-        pid = player['id']
-        sid = square['id']
-        wrl = player['world']
+        pid = int(player['id'])
+        sid = int(square['id'])
+        wrl = int(player['world'])
         data = {}
         
         data['player1'] = pid
