@@ -1,4 +1,4 @@
-from db import buildings, players, user, worldMap, worlds, timestamps, session, database
+from db import buildings, players, user, worldMap, worlds, timestamps, session, database, actions
 
 def login(data):
     
@@ -33,11 +33,21 @@ def upgrade_building(playerId, buildingId):
         #pobranie obiektu z bazy danych po ID
         currentBuilding = buildings.building_read(buildingId)
         player = players.player_read(playerId)
+        if currentBuilding['lvl']==3:
+                return -1, None
+        if currentBuilding == None:
+                return -1, None
+        
+        if player == None:
+                return -1, None
         upgradedBuilding = buildings.get_buildings(currentBuilding['name'],currentBuilding['lvl']+1).pop() #jaki ma byc po upgradzie
+        
+       
         #czy playera stac na budynek 
         #woodcost
         check={}
         bool = False
+        #jezeli budynek jest na poziomie 3 to ma najwyzszy lvl
         if upgradedBuilding['woodCost']> player['deski']:
                 check['deski']='0'
                 bool= True
@@ -55,7 +65,7 @@ def upgrade_building(playerId, buildingId):
                 bool= True
         else:
                  check['actionPoints']='1'
-        #jezeli ktoregos surowca jest za malo
+        #jezeli ktoregos surowca jest za malo,albo budynek jest na najwyzszym poziomie
         if bool==True:
                 return check, -1
         #jezeli wszysto sie zgadza
@@ -67,144 +77,24 @@ def upgrade_building(playerId, buildingId):
         sendToActonTable['status']='uncompleted'
         sendToActonTable['building']=currentBuilding['name']
         sendToActonTable['action']='buildingUpgrade'
-        sendToActonTable['world']=player['worldId']
+        sendToActonTable['world']=player['world']
         updatedplayer= players.player_update(player,player['id'])
+        actions.create_action(sendToActonTable)
         return updatedplayer, None
+def generate_resources(playerId):
+        player = players.player_read(playerId)
+        terytory_status= len(worldMap.get_square_status(player['world'], 'occupied', player['id']))
 
+        tartak = buildings.building_read(player['tartakId'])
+        bunkier = buildings.building_read(player['bunkierId'])
+        bank = buildings.building_read(player['sejfId'])
+        sklad = buildings.building_read(player['skladId'])
+        spizarnia= buildings.building_read(player['spizarniaId'])
+#trzeba dodac bonus za tereny
+        player['deski']= player['deski'] + (tartak['income'] * bunkier['income']*(1+player['actionPoints']) * 0.10) * (1 + terytory_status * 0.15)
+        player['kapsle']=player['kapsle'] + (bank['income'] * bunkier['income']*(1+player['actionPoints']) * 0.10) * (1 + terytory_status * 0.15)
+        player['naboje']=player['naboje'] + (sklad['income'] * bunkier['income']*(1+player['actionPoints']) * 0.10) * (1 + terytory_status * 0.15)
+        player['jagody']=player['jagody'] + (spizarnia['income'] * bunkier['income']*(1+player['actionPoints']) * 0.10) * (1 + terytory_status * 0.15)
+        updatedplayer= players.player_update(player,player['id'])
+        return updatedplayer
 
-def create_buildings():
-        data = {}
-        data['name'] = 'Lumber Mill'
-        data['lvl'] = 1
-        data['woodCost'] = 0
-        data['capsCost'] = 0
-        data['pointsCost'] = 0
-        data['income'] = 50
-        
-        buildings.create_building(data)
-
-        data['name'] = 'Lumber Mill'
-        data['lvl'] = 2
-        data['woodCost'] = 3000
-        data['capsCost'] = 1000
-        data['pointsCost'] = 3
-        data['income'] = 150
-        
-        buildings.create_building(data)
-
-        data['name'] = 'Lumber Mill'
-        data['lvl'] = 3
-        data['woodCost'] = 10000
-        data['capsCost'] = 3000
-        data['pointsCost'] = 3
-        data['income'] = 300
-        
-        buildings.create_building(data)
-
-        data['name'] = 'Armory'
-        data['lvl'] = 1
-        data['woodCost'] = 0
-        data['capsCost'] = 0
-        data['pointsCost'] = 0
-        data['income'] = 50
-        
-        buildings.create_building(data)
-
-        data['name'] = 'Armory'
-        data['lvl'] = 2
-        data['woodCost'] = 3200
-        data['capsCost'] = 1500
-        data['pointsCost'] = 4
-        data['income'] = 180
-        
-        buildings.create_building(data)
-
-        data['name'] = 'Armory'
-        data['lvl'] = 3
-        data['woodCost'] = 11000
-        data['capsCost'] = 3400
-        data['pointsCost'] = 4
-        data['income'] = 500
-        
-        buildings.create_building(data)
-
-        data['name'] = 'Bank'
-        data['lvl'] = 1
-        data['woodCost'] = 0
-        data['capsCost'] = 0
-        data['pointsCost'] = 0
-        data['income'] = 50
-        
-        buildings.create_building(data)
-
-        data['name'] = 'Bank'
-        data['lvl'] = 2
-        data['woodCost'] = 3000
-        data['capsCost'] = 3000
-        data['pointsCost'] = 4
-        data['income'] = 250
-        
-        buildings.create_building(data)
-
-        data['name'] = 'Bank'
-        data['lvl'] = 3
-        data['woodCost'] = 5000
-        data['capsCost'] = 7500
-        data['pointsCost'] = 4
-        data['income'] = 400
-        
-        buildings.create_building(data)
-
-        data['name'] = 'Bunker'
-        data['lvl'] = 1
-        data['woodCost'] = 0
-        data['capsCost'] = 0
-        data['pointsCost'] = 0
-        data['income'] = 1
-        
-        buildings.create_building(data)
-
-        data['name'] = 'Bunker'
-        data['lvl'] = 2
-        data['woodCost'] = 3000
-        data['capsCost'] = 3000
-        data['pointsCost'] = 4
-        data['income'] = 1.2
-        
-        buildings.create_building(data)
-
-        data['name'] = 'Bunker'
-        data['lvl'] = 3
-        data['woodCost'] = 5000
-        data['capsCost'] = 8000
-        data['pointsCost'] = 4
-        data['income'] = 1.8
-        
-        buildings.create_building(data)
-
-        data['name'] = 'Pantry'
-        data['lvl'] = 1
-        data['woodCost'] = 0
-        data['capsCost'] = 0
-        data['pointsCost'] = 0
-        data['income'] = 50
-        
-        buildings.create_building(data)
-
-        data['name'] = 'Pantry'
-        data['lvl'] = 2
-        data['woodCost'] = 2000
-        data['capsCost'] = 1500
-        data['pointsCost'] = 4
-        data['income'] = 150
-        
-        buildings.create_building(data)
-
-        data['name'] = 'Pantry'
-        data['lvl'] = 3
-        data['woodCost'] = 4000
-        data['capsCost'] = 4000
-        data['pointsCost'] = 4
-        data['income'] = 300
-        
-        buildings.create_building(data)
