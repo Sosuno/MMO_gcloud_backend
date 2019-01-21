@@ -43,7 +43,7 @@ def attack(player,square,bullets):
     else:
         player['naboje'] = player['naboje'] - 100
         player['actionPoints'] = player['actionPoints'] - 5
-        players.player_update(player, player['ID'])
+        players.player_update(player, player['id'])
 
         '''
         data = {}
