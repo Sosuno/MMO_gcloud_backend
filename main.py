@@ -137,12 +137,11 @@ def attack_square():
         return jsonify(msg = "Bullet amount undefined"), 406
     bullets = content.get('bullets')
     player = db_control.players.player_read(content.get('playerid'))
-    statusSquare = db_control.worldMap.read_square(content.get('squareid'))
-    if player['world'] != statusSquare['world']:
+    square = db_control.worldMap.read_square(content.get('squareid'))
+    if player['world'] != square['world']:
         return jsonify(msg = "The square you're trying to attack is out of this world"), 408
-    
-    status = statusSquare['status']
-    return jsonify(msg = db_control.attack(player,status,bullets))
+
+    return jsonify(msg = db_control.attack(player,square,bullets))
     
 @app.route("/game/cron")
 def calculate_world():
