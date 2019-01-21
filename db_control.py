@@ -41,7 +41,7 @@ def attack(player,square,bullets):
     elif player['naboje'] < bullets:
         return "Not enough bullets"
     else:
-        player['naboje'] = player['naboje'] - 100
+        player['naboje'] = player['naboje'] - bullets
         player['actionPoints'] = player['actionPoints'] - 5
         players.player_update(player, player['id'])
 
