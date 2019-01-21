@@ -2,6 +2,7 @@
 from flask import Flask, request, jsonify, session, abort
 from flask_cors import CORS
 import db_control
+import admin_functions
 import re
 app = Flask(__name__)
 CORS(app)
@@ -124,9 +125,14 @@ def get_player_profile(playerId):
 
 @app.route("/game/cron")
 def calculate_world():
+    
+    if not request.headers.get("X-Appengine-Cron"):
+        abort(401)
+    
 
 
     return None
+
 
 @app.route("/session", methods = [ 'GET' , 'DELETE' ])
 def sessions():
