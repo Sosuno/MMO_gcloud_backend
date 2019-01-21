@@ -56,15 +56,15 @@ def attack(player,square,bullets):
 
          # todo - add attack action to cron
         if status == "free":
-            data['action'] = "take"
-           #actions.create_action(data)
+            #data['action'] = "take"
+            #actions.create_action(data)
             return "Taking over commenced. You used 5 action points."
         elif status == "occupied":
-            data['action'] = "take over"
+            #data['action'] = "take over"
             #actions.create_action(data)
             return "Attacking enemy territory commenced. You used 5 action points."
         elif status == "City":
-            data['action'] = "attack"
+            #data['action'] = "attack"
             #actions.create_action(data)
             return "Attacking enemy city commenced. You used 5 action points."
         else:
