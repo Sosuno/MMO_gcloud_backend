@@ -139,7 +139,7 @@ def attack_square():
     player = db_control.players.player_read(content.get('playerid'))
     square = db_control.worldMap.read_square(content.get('squareid'))
     if player['world'] != square['world']:
-        return jsonify(msg = "The square you're trying to attack is out of this world"), 408
+        return jsonify(msg = "Player is in world" + square['world'] + ", square is in " + player['world']), 408
 
     return jsonify(msg = db_control.attack(player,square,bullets))
     
