@@ -45,13 +45,14 @@ def attack(player,square,bullets):
         player['naboje'] = player['naboje'] - bullets
         player['actionPoints'] = player['actionPoints'] - 5
         players.player_update(player, player['id'])
-
+        pid = player['id']
+        sid = square['id']
+        wrl = player['world']
+        data = {}
         
-        data = {'player1': '', 'square': '', 'world': '', 'bullets': '', 'status': '', 'action': ''}
-        
-        data['player1'] = player['id']
-        data['square'] = square['id']
-        data['world'] = player['world']
+        data['player1'] = pid
+        data['square'] = sid
+        data['world'] = wrl
         data['bullets'] = bullets
         data['status'] = 'uncompleted'
         
