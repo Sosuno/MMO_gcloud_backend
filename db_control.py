@@ -114,7 +114,7 @@ def upgrade_building(playerId, buildingId):
         #jezeli wszysto sie zgadza
         player['deski']= player['deski']-upgradedBuilding['woodCost']
         player['kapsle']= player['kapsle']-upgradedBuilding['capsCost']
-        player['pointsCost']= player['actionPoints']-upgradedBuilding['pointsCost']
+        player['actionPoints']= player['actionPoints']-upgradedBuilding['pointsCost']
         sendToActonTable={}
         sendToActonTable['player']=player['id']
         sendToActonTable['status']='uncompleted'
