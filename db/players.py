@@ -35,6 +35,9 @@ def player_create(data):
         world['players'] = 0
     elif world['capacity'] == world['players']:
         return -1
+    freeSquares = get_square_status(data['world'])
+    if freeSquares == None:
+        return -1
     world['players'] = world['players'] + 1
     world = update_world(world, world['id'])
 
@@ -48,17 +51,21 @@ def player_create(data):
     data['naboje'] = 100
     data['jagody'] = 100
     data['tartak'] = 1
+    data['tartakId'] = 6571545078005760
     data['sejf'] = 1
+    data['sejfId'] = 6197949226811392
     data['sklad'] = 1
+    data['skladId'] = 6479330687320064
     data['spizarnia'] = 1
+    data['spizarniaId'] = 5798449991647232 
     data['bunkier'] = 1
+    data['bunkierId'] = 5259355528101888
     data['actionPoints'] = 10
     data['lastLogin'] = current_timestamp()
     entity.update(data)
     ds.put(entity)
     player = get_entity(entity)
 
-    freeSquares = get_square_status(data['world'])
     base = random.choice(freeSquares)
     base['status'] = 'City'
     base['owner'] = player['id']
@@ -67,7 +74,7 @@ def player_create(data):
         del player['userId']
     return player
 
-def player_update(data,id):
+def player_update(data, id):
     ds = get_client()
     key = ds.key('Player', int(id))
     entity = datastore.Entity(
@@ -78,3 +85,15 @@ def player_update(data,id):
     entity.update(data)
     ds.put(entity)
     return get_entity(entity)
+
+
+def get_players():
+    ds = get_client()
+    query = ds.query(kind = 'Player')
+
+    results = []
+    
+    for entity in query.fetch():
+            results.append(get_entity(entity))
+
+    return results

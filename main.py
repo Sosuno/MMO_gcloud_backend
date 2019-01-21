@@ -2,6 +2,7 @@
 from flask import Flask, request, jsonify, session, abort
 from flask_cors import CORS
 import db_control
+import admin_functions
 import re
 app = Flask(__name__)
 CORS(app)
@@ -65,8 +66,12 @@ def init_world(worldId):
         return abort(401)
     elif user == -2:
         return jsonify(msg = "Spierdolilam cos"), 500
+    id = None
     world = db_control.worlds.read_world(worldId) 
-    return jsonify(World = world)
+    player = db_control.players.get_player(user['id'], worldId)
+    if player is not None:
+        id = player['id']
+    return jsonify(World = world, playerId = id)
 
 @app.route("/game/<world>/join", methods = ['POST'])
 def join_world(world, user = None, noCheck = False):
@@ -78,7 +83,7 @@ def join_world(world, user = None, noCheck = False):
             return jsonify(msg = "Spierdolilam cos"), 500
         player = db_control.players.get_player(user['id'], world)
         if player is not None:
-            return jsonify(msg = "Already in")
+            return jsonify(msg = "Already in"), 401
     data = {}
     data['username'] = user['username']
     data['world'] = world
@@ -109,10 +114,9 @@ def get_player_profile(playerId):
         return abort(401)
     elif user == -2:
         return jsonify(msg = "Spierdolilam cos"), 500
-    w = int(re.search(r'\d+', playerId).group())
-    player = db_control.players.player_read(w)
+    player = db_control.players.player_read(playerId)
     if player is None:
-        return jsonify(msg = "I am potato", id = w)
+        return abort(406)
     returnPlayer = {}
     returnPlayer['username'] = player['username']
     returnPlayer['avatarURL'] = user['avatarURL']
@@ -145,9 +149,33 @@ def attack_square():
     
 @app.route("/game/cron")
 def calculate_world():
+    
+    if not request.headers.get("X-Appengine-Cron"):
+        abort(401)
+    
 
 
     return None
+
+
+@app.route("/session", methods = [ 'GET' , 'DELETE' ])
+def sessions():
+    user = request_check(request)
+    if user == -1:
+        return abort(401)
+    elif user == -2:
+        return jsonify(msg = "Spierdolilam cos"), 500
+    uuid = request.headers.get('Authorization')
+    if request.method == 'GET':
+        if not db_control.session.check_if_session_active(uuid):
+            return jsonify(session = False)
+        else:
+            return jsonify(session = True)
+    else:
+        if not db_control.session.check_if_session_active(uuid):
+            return abort(401)
+        db_control.session.destroy_all_user_sessions(uuid)
+        return jsonify(msg = "Deleted")
 
 def request_check(request):
     uuid = None
@@ -164,3 +192,27 @@ def request_check(request):
     if user is None:
         return -2
     return user
+
+
+@app.route("/game/upgrade/<playerId>/<buildingId>/", methods = ['POST'])
+def upgrade_building(playerId,buildingId):
+    #sprawdzenie czy regquest jest wyslany przez zalogowanego uzytkownika
+    user = request_check(request)
+    if user == -1:
+        return abort(401)
+    elif user == -2:
+        return jsonify(msg = "Spierdolilam cos"), 500
+   
+
+    updatingPlayersResources, lack= db_control.upgrade_building(playerId,buildingId)
+    if updatingPlayersResources == -1:
+        return abort(406)
+    
+    if lack == -1:
+        return jsonify(fail=updatingPlayersResources),406
+    return jsonify(player = updatingPlayersResources)
+
+
+
+
+
