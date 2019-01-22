@@ -6,4 +6,3 @@ service: worker
 handlers:
 - url: /.*
   script: worker.app
-login: admin
