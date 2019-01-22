@@ -30,22 +30,58 @@ def create_world(name, size = 25, capacity = 4):
         world = worlds.create_world(name, size, capacity)
         return world
 
+def get_player_upgrade_cost(playerid):
+        player = players.player_read(playerid)
+        builds = {}
+        if player['tartak'] != 3:
+                lumberMill = buildings.get_buildings('Lumber Mill', player['tartak']+1).pop() 
+        else:
+                lumberMill = 'max'
+        builds['lumberMill']  = lumberMill
+
+        if player['sklad'] != 3:
+                armory = buildings.get_buildings('Armory', player['sklad']+1).pop() 
+        else:
+                armory = 'max'
+        builds['armory'] = armory
+
+        if player['sejf'] != 3:
+                bank = buildings.get_buildings('Bank', player['sejf']+1).pop() 
+        else:
+                bank = 'max'
+        builds['bank'] = bank
+
+        if player['spizarnia'] != 3:
+                pantry = buildings.get_buildings('Pantry', player['spizarnia']+1).pop() 
+        else:
+                pantry = 'max'
+        builds['pantry'] = pantry
+
+        if player['bunkier'] != 3:
+                bunker = buildings.get_buildings('Bunker', player['bunkier']+1).pop() 
+        else:
+                bunker = 'max'
+        builds['bunker'] = bunker
+        return builds
+        
+
+
 
 def attack(player,square,bullets):
         
     status = square['status']
 
     if player['actionPoints'] < 5:
-        return "Not enough action points"
+        return "Not enough action points", -1
     elif player['naboje'] < 100:
-        return "Not enough bullets"
-    elif player['naboje'] < bullets:
-        return "Not enough bullets. You currently have " + str(player['naboje']) + "."
+        return "Not enough bullets", -1
+    elif int(player['naboje']) < int(bullets):
+        return "Not enough bullets. You currently have " + str(player['naboje']) + ".", -1
     elif player['id'] == square['owner']:
-        return "You cannot attack your own territory"
+        return "You cannot attack your own territory", -1
     else:
-        player['naboje'] = player['naboje'] - bullets
-        player['actionPoints'] = player['actionPoints'] - 5
+        player['naboje'] = int(player['naboje']) - int(bullets)
+        player['actionPoints'] = int(player['actionPoints']) - 5
         player = players.player_update(player, player['id'])
    
         data = {}
@@ -60,17 +96,17 @@ def attack(player,square,bullets):
         if status == "free":
             data['action'] = "take"
             actions.create_action(data)
-            return "Taking over commenced. You used 5 action points."
+            return "Taking over commenced. You used 5 action points.", 0
         elif status == "occupied":
             data['action'] = "take over"
             actions.create_action(data)
-            return "Attacking enemy territory commenced. You used 5 action points."
+            return "Attacking enemy territory commenced. You used 5 action points.", 0
         elif status == "City":
             data['action'] = "attack"
             actions.create_action(data)
-            return "Attacking enemy city commenced. You used 5 action points."
+            return "Attacking enemy city commenced. You used 5 action points.", 0
         else:
-            return "Unable to get field status"
+            return "Unable to get field status", -1
 
 def upgrade_building(playerId, buildingId):
         #pobranie obiektu z bazy danych po ID
@@ -124,6 +160,7 @@ def upgrade_building(playerId, buildingId):
         updatedplayer= players.player_update(player,player['id'])
         actions.create_action(sendToActonTable)
         return updatedplayer, None
+
 def generate_resources(playerId):
         player = players.player_read(playerId)
         terytory_status= len(worldMap.get_square_status(player['world'], 'occupied', player['id']))
@@ -140,4 +177,3 @@ def generate_resources(playerId):
         player['jagody']=player['jagody'] + (spizarnia['income'] * bunkier['income']*(1+player['actionPoints']) * 0.10) * (1 + terytory_status * 0.15)
         updatedplayer= players.player_update(player,player['id'])
         return updatedplayer
-

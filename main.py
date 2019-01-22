@@ -105,7 +105,7 @@ def get_player(world):
         return abort(406)
     if 'userId' in player:
         del player['userId']
-    return jsonify(player = player)
+    return jsonify(player = player, buildings = controller.get_player_upgrade_cost(player['id']))
 
 @app.route("/game/profile/<playerId>/", methods = ['GET'])
 def get_player_profile(playerId):
@@ -145,7 +145,11 @@ def attack_square():
     if int(player['world']) != int(square['world']):
         return jsonify(msg = "Player is in world" + str(square['world']) + ", square is in " + str(player['world'])), 408
 
-    return jsonify(msg = db_control.attack(player,square,bullets))
+    result, error = controller.attack(player,square,bullets)
+    if error == -1:
+        return jsonify(msg = result), 406
+
+    return jsonify(msg = result)
     
 @app.route("/game/cron")
 def calculate_world():
@@ -173,9 +177,32 @@ def sessions():
             return jsonify(session = True)
     else:
         if not db_control.session.check_if_session_active(uuid):
-            return abort(401)
+            return jsonify(msg = "No session")
         db_control.session.destroy_all_user_sessions(uuid)
         return jsonify(msg = "Deleted")
+
+@app.route("/game/upgrade/<playerId>/<buildingId>/", methods = ['POST'])
+def upgrade_building(playerId,buildingId):
+    #sprawdzenie czy regquest jest wyslany przez zalogowanego uzytkownika
+    user = request_check(request)
+    if user == -1:
+        return abort(401)
+    elif user == -2:
+        return jsonify(msg = "Spierdolilam cos"), 500
+   
+    updatingPlayersResources, lack= db_control.upgrade_building(playerId,buildingId)
+    if updatingPlayersResources == -1:
+        return abort(406)
+    
+    if lack == -1:
+        return jsonify(fail=updatingPlayersResources),406
+    return jsonify(player = updatingPlayersResources)
+    
+@app.route("/game/generate/<playerId>/", methods = ['POST'])
+def generate_resources(playerId):
+    db_control.generate_resources(playerId)
+    return jsonify(msg="ok")
+
 
 def request_check(request):
     uuid = None
@@ -192,30 +219,6 @@ def request_check(request):
     if user is None:
         return -2
     return user
-
-
-@app.route("/game/upgrade/<playerId>/<buildingId>/", methods = ['POST'])
-def upgrade_building(playerId,buildingId):
-    #sprawdzenie czy regquest jest wyslany przez zalogowanego uzytkownika
-    user = request_check(request)
-    if user == -1:
-        return abort(401)
-    elif user == -2:
-        return jsonify(msg = "Spierdolilam cos"), 500
-   
-
-    updatingPlayersResources, lack= db_control.upgrade_building(playerId,buildingId)
-    if updatingPlayersResources == -1:
-        return abort(406)
-    
-    if lack == -1:
-        return jsonify(fail=updatingPlayersResources),406
-    return jsonify(player = updatingPlayersResources)
-    
-@app.route("/game/generate/<playerId>/", methods = ['POST'])
-def generate_resources(playerId):
-    db_control.generate_resources(playerId)
-    return jsonify(msg="ok")
 
 
 
