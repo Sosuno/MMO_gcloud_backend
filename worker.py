@@ -6,10 +6,10 @@ class EnqueueActionsHandler(webapp2.RequestHandler):
 
         def update_db_state():
             # execute the actions
-            
+
         update_db_state()
 
 
 app = webapp2.WSGIApplication([
-    ('/update_counter', EnqueueActionsHandler)
+    ('/enqueue_actions', EnqueueActionsHandler)
 ], debug=True)
