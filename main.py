@@ -1,4 +1,3 @@
-
 from flask import Flask, request, jsonify, session, abort
 from flask_cors import CORS
 import db_control
@@ -211,6 +210,19 @@ def upgrade_building(playerId,buildingId):
     if lack == -1:
         return jsonify(fail=updatingPlayersResources),406
     return jsonify(player = updatingPlayersResources)
+
+
+class EnqueueTaskHandler(webapp2.RequestHandler):
+    def post(self):
+        thingstodo = None # get things to do
+
+        task = taskqueue.add(
+            url='/enqueue_actions',
+            target='worker',
+            params={'thingstodo': None})
+
+        self.response.write(
+            'Task {} enqueued, ETA {}.'.format(task.name, task.eta))
 
 
 
