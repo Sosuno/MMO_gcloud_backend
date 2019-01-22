@@ -156,8 +156,8 @@ def calculate_world():
     
     if not request.headers.get("X-Appengine-Cron"):
         abort(401)
-    
-
+    #TODO taskQue 
+    controller.calculate_world()
 
     return None
 
