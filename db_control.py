@@ -40,7 +40,7 @@ def attack(player,square,bullets):
     elif player['naboje'] < 100:
         return "Not enough bullets"
     elif player['naboje'] < bullets:
-        return "Not enough bullets"
+        return "Not enough bullets. You currently have " + str(bullets) + "."
     elif player['id'] == square['owner']:
         return "You cannot attack your own territory"
     else:
@@ -49,7 +49,6 @@ def attack(player,square,bullets):
         player = players.player_update(player, player['id'])
    
         data = {}
-        
         data['player1'] = player['id']
         data['square'] = square['id']
         data['world'] = player['world']
@@ -115,7 +114,7 @@ def upgrade_building(playerId, buildingId):
         #jezeli wszysto sie zgadza
         player['deski']= player['deski']-upgradedBuilding['woodCost']
         player['kapsle']= player['kapsle']-upgradedBuilding['capsCost']
-        player['pointsCost']= player['actionPoints']-upgradedBuilding['pointsCost']
+        player['actionPoints']= player['actionPoints']-upgradedBuilding['pointsCost']
         sendToActonTable={}
         sendToActonTable['player']=player['id']
         sendToActonTable['status']='uncompleted'
