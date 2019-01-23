@@ -1,5 +1,5 @@
 from .database import get_client,get_entity, datastore
-
+from .timestamps import current_timestamp
 
 def create_action(data):
     ds = get_client()
@@ -27,7 +27,7 @@ def get_uncompleted_actions(world, action = None):
     query = ds.query(kind = 'Actions')
     if action is not None:
         query.add_filter('action', '=', action)
-    query.add_filter('world', '=', world)
+    query.add_filter('world', '=', str(world))
     query.add_filter('status', '=', 'uncompleted')
     results = []
     for entity in query.fetch():
@@ -37,7 +37,7 @@ def get_uncompleted_actions(world, action = None):
 def get_to_report_actions(world, player = None):
     ds = get_client()
     query = ds.query(kind = 'Actions')
-    query.add_filter('world', '=', world)
+    query.add_filter('world', '=', str(world))
     query.add_filter('status', '=', 'To report')
     if player is not None:
         query.add_filter('player', '=', player)
@@ -51,10 +51,28 @@ def check_if_double_take(square):
     query = ds.query(kind = 'Actions')
     query.add_filter('square', '=', square)
     query.add_filter('status', '=', 'uncompleted')
-    results = []
-    for entity in query.fetch():
-        results.append(get_entity(entity))
+    results = list(query.fetch())
+    #for e in query.fetch():
+     #   results.append(get_entity(e))
     if len(results) == 1:
         return False
     else:
         return results
+
+def create_login_log(username):
+    data = {}
+    data['user'] = username
+    data['time'] = current_timestamp
+    ds = get_client()
+    key = ds.key(kind = 'Logins')
+    entity = datastore.Entity(
+        key=key,
+    )
+    entity.update(data)
+    ds.put(entity)
+
+def get_login_logs():
+    ds = get_client()
+    query = ds.query(kind = 'Logins')
+    results = list(query.fetch())
+    return results

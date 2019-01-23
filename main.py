@@ -151,15 +151,22 @@ def attack_square():
 
     return jsonify(msg = result)
     
-@app.route("/game/cron")
+@app.route("/game/cron", methods = ['GET'])
 def calculate_world():
     
     if not request.headers.get("X-Appengine-Cron"):
-        abort(401)
-    #TODO taskQue 
-    controller.calculate_world()
-
-    return None
+        user = request_check(request)
+        if user == -1:
+            abort(401)
+        if user['access'] != 'admin':
+            abort(401)
+        
+    worlds = controller.worlds.get_world(None, 'name')
+    for world in worlds:
+        
+        controller.calculate_world(world['id'])
+    
+    return jsonify(msg = "Done")
 
 
 @app.route("/session", methods = [ 'GET' , 'DELETE' ])

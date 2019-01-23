@@ -12,6 +12,7 @@ def login(data):
     if user.is_correct_user(data['username'], data['password']):
             session.destroy_all_user_sessions(data['username'])
             my_session = session.create_session(data['username'])
+            actions.create_login_log(data['username'])
             return my_session['sessionID']
     else:
         return False
@@ -64,9 +65,6 @@ def get_player_upgrade_cost(playerid):
         builds['bunker'] = bunker
         return builds
         
-
-
-
 def attack(player,square,bullets):
         
     status = square['status']
@@ -85,7 +83,7 @@ def attack(player,square,bullets):
         player = players.player_update(player, player['id'])
    
         data = {}
-        data['player1'] = player['id']
+        data['player'] = player['id']
         data['square'] = square['id']
         data['world'] = player['world']
         data['bullets'] = bullets
@@ -121,7 +119,6 @@ def upgrade_building(playerId, buildingId):
                 return -1, None
         upgradedBuilding = buildings.get_buildings(currentBuilding['name'],currentBuilding['lvl']+1).pop() #jaki ma byc po upgradzie
         
-       
         #czy playera stac na budynek 
         #woodcost
         check={}
@@ -181,6 +178,7 @@ def generate_resources(playerId):
 
 def calculate_world(world):
 
+        session.destroy_all_user_sessions()
         oldActions = actions.get_to_report_actions(world)
         contestedSquares = []
         for action in oldActions:
@@ -188,10 +186,16 @@ def calculate_world(world):
                 actions.update_action(action, action['id'])
 
         actionList = actions.get_uncompleted_actions(world)
+        #return actionList
         for action in actionList:
-                if action[square] in contestedSquares:
-                        continue
-                player = players.player_read(action['player'])
+                action['data'] = timestamps.current_date()
+                if 'square' in action:
+                        if action['square'] in contestedSquares:
+                                continue
+                if 'player' in action:
+                        player = players.player_read(action['player'])
+                else:
+                        player = players.player_read(action['player1'])
                 if action['action'] == 'buildingUpgrade':
                         if action['building'] == 'Bank':
                                 player['bank'] = player['bank'] +1
@@ -205,16 +209,16 @@ def calculate_world(world):
                                 player['tartak'] = player['tartak'] +1
                         player = players.player_update(player, player['id'])
                         action['status'] = 'To report'
-                        action['data'] = timestamps.current_date()
                         actions.update_action(action, action['id'])
                 elif action['action'] == 'take':
                         square = worldMap.read_square(action['square'])
-                        check = actions.check_if_double_take(square)
+                        check = actions.check_if_double_take(square['id'])
                         if check == False:
                                 square['owner'] = player['id']
                                 square['status'] = 'occupied'
                                 worldMap.update_square(square, square['id'])
                                 action['status'] = 'To report'
+                                action['outcome'] = 'success'
                                 actions.update_action(action, action['id'])
                         else:
                                 contestedSquares.append(square['id'])
@@ -226,7 +230,8 @@ def calculate_world(world):
 
         playersList = players.get_players()
         for player in playersList:
-                generate_resources(player)
+                generate_resources(player['id'])
+
                    
 def take_over(action, player1):
         square = worldMap.read_square(action['square'])
@@ -303,9 +308,3 @@ def fight(square, fights):
                                 fight['outcome'] = 'success'
 
                 actions.update_action(fight,fight['id'])
-                
-
-
-
-        
-        

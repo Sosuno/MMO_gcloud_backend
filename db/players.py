@@ -46,10 +46,10 @@ def player_create(data):
     entity = datastore.Entity(
         key=key,
     )
-    data['deski'] = 100
-    data['kapsle'] = 100
-    data['naboje'] = 100
-    data['jagody'] = 100
+    data['deski'] = 1000
+    data['kapsle'] = 1000
+    data['naboje'] = 1000
+    data['jagody'] = 1000
     data['tartak'] = 1
     data['tartakId'] = 6571545078005760
     data['sejf'] = 1
