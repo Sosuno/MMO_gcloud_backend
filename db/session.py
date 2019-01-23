@@ -24,10 +24,11 @@ def destroy_session(uuid):
         key = ds.key('Session', int(r['id']))
         ds.delete(key)
 
-def destroy_all_user_sessions(username):
+def destroy_all_user_sessions(username = None):
     ds = get_client()
     query = ds.query(kind = 'Session')
-    query.add_filter('user', '=', username)
+    if username is not None:
+        query.add_filter('user', '=', username)
     results = list(query.fetch())
 
     for result in results:

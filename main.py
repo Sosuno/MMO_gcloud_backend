@@ -1,6 +1,7 @@
 
 from flask import Flask, request, jsonify, session, abort
 from flask_cors import CORS
+import world_calculations
 import db_control
 import admin_functions
 import re
@@ -105,7 +106,11 @@ def get_player(world):
         return abort(406)
     if 'userId' in player:
         del player['userId']
-    return jsonify(player = player, buildings = controller.get_player_upgrade_cost(player['id']))
+    
+    return jsonify(player = player, buildings = controller.get_player_upgrade_cost(player['id']), 
+    pending = controller.generate_pending(world, player['id']),
+    toRaport = controller.generate_raports(world, player['id'])
+    )
 
 @app.route("/game/profile/<playerId>/", methods = ['GET'])
 def get_player_profile(playerId):
@@ -151,22 +156,29 @@ def attack_square():
 
     return jsonify(msg = result)
     
-@app.route("/game/cron")
+@app.route("/game/cron", methods = ['GET'])
 def calculate_world():
     
     if not request.headers.get("X-Appengine-Cron"):
-        abort(401)
+        user = request_check(request)
+        if user == -1:
+            abort(401)
+        if user['access'] != 'admin':
+            abort(401)
+        
+    worlds = controller.worlds.get_world(None, 'name')
+    for world in worlds:
+        
+        world_calculations.calculate_world(world['id'])
     
-
-
-    return None
+    return jsonify(msg = "Done")
 
 
 @app.route("/session", methods = [ 'GET' , 'DELETE' ])
 def sessions():
     user = request_check(request)
     if user == -1:
-        return abort(401)
+        return jsonify(session = False)
     elif user == -2:
         return jsonify(msg = "Spierdolilam cos"), 500
     uuid = request.headers.get('Authorization')
@@ -198,12 +210,17 @@ def upgrade_building(playerId,buildingId):
         return jsonify(fail=updatingPlayersResources),406
     return jsonify(player = updatingPlayersResources)
     
-@app.route("/game/generate/<playerId>/", methods = ['POST'])
-def generate_resources(playerId):
-    db_control.generate_resources(playerId)
-    return jsonify(msg="ok")
+@app.route("/game/<world>/generate/raports", methods = ['GET'])
+def generate_raports(world):
+    user = request_check(request)
+    if user == -1:
+        return abort(401)
+    elif user == -2:
+        return jsonify(msg = "Spierdolilam cos"), 500
+    player = controller.players.get_player(user['id'], world)
 
-
+    return jsonify(pendingRaports = controller.generate_pending(world, player['id']), toRaports = controller.generate_raports(world, player['id']))
+    
 def request_check(request):
     uuid = None
     if 'Authorization' not in request.headers:

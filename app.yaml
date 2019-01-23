@@ -1,7 +1,8 @@
 runtime: python37
 entrypoint: gunicorn -b :$PORT main:app
+instance_class: F4
 
 automatic_scaling:
   min_instances: 0
-  max_instances: 2
+  max_instances: 5
 

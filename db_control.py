@@ -1,5 +1,5 @@
 from db import buildings, players, user, worldMap, worlds, timestamps, session, database, actions
-from flask import jsonify
+
 
 def login(data):
     
@@ -12,6 +12,7 @@ def login(data):
     if user.is_correct_user(data['username'], data['password']):
             session.destroy_all_user_sessions(data['username'])
             my_session = session.create_session(data['username'])
+           # actions.create_login_log(data['username'])
             return my_session['sessionID']
     else:
         return False
@@ -64,9 +65,6 @@ def get_player_upgrade_cost(playerid):
         builds['bunker'] = bunker
         return builds
         
-
-
-
 def attack(player,square,bullets):
         
     status = square['status']
@@ -87,7 +85,7 @@ def attack(player,square,bullets):
         player = players.player_update(player, player['id'])
    
         data = {}
-        data['player1'] = player['id']
+        data['player'] = player['id']
         data['square'] = square['id']
         data['world'] = player['world']
         data['bullets'] = bullets
@@ -123,7 +121,6 @@ def upgrade_building(playerId, buildingId):
                 return -1, None
         upgradedBuilding = buildings.get_buildings(currentBuilding['name'],currentBuilding['lvl']+1).pop() #jaki ma byc po upgradzie
         
-       
         #czy playera stac na budynek 
         #woodcost
         check={}
@@ -163,19 +160,64 @@ def upgrade_building(playerId, buildingId):
         actions.create_action(sendToActonTable)
         return updatedplayer, None
 
-def generate_resources(playerId):
-        player = players.player_read(playerId)
-        terytory_status= len(worldMap.get_square_status(player['world'], 'occupied', player['id']))
+def generate_pending(worldId, playerId):
+        pending = actions.get_uncompleted_actions(worldId, None, playerId)
+        pendingList = []
+        for rap in pending:
+                text = "You are "
+                if rap['action'] == 'buildingUpgrade':
+                        text = text + "upgrading " + rap['building']
+                elif rap['action'] == 'take':
+                        text = text + "trying to occupy territory"
+                elif rap['action'] == 'take over':
+                        text = text + "trying to take over a territory"
+                elif rap['action'] == 'attack':
+                        text = text + "trying to attack a city"
+                pendingList.append(text)
 
-        tartak = buildings.building_read(player['tartakId'])
-        bunkier = buildings.building_read(player['bunkierId'])
-        bank = buildings.building_read(player['sejfId'])
-        sklad = buildings.building_read(player['skladId'])
-        spizarnia= buildings.building_read(player['spizarniaId'])
-#trzeba dodac bonus za tereny
-        player['deski']= player['deski'] + (tartak['income'] * bunkier['income']*(1+player['actionPoints']) * 0.10) * (1 + terytory_status * 0.15)
-        player['kapsle']=player['kapsle'] + (bank['income'] * bunkier['income']*(1+player['actionPoints']) * 0.10) * (1 + terytory_status * 0.15)
-        player['naboje']=player['naboje'] + (sklad['income'] * bunkier['income']*(1+player['actionPoints']) * 0.10) * (1 + terytory_status * 0.15)
-        player['jagody']=player['jagody'] + (spizarnia['income'] * bunkier['income']*(1+player['actionPoints']) * 0.10) * (1 + terytory_status * 0.15)
-        updatedplayer= players.player_update(player,player['id'])
-        return updatedplayer
+        return pendingList
+
+
+def generate_raports(worldId, playerId):
+        toReport = actions.get_to_report_actions(worldId, playerId)
+        rapList = []
+        defendToReport = actions.get_defended_actions(worldId,playerId)
+        for rap in toReport:
+                text = "You have "
+                if rap['action'] == 'buildingUpgrade':
+                        text = text + "upgraded " + rap['building']
+                elif rap['action'] == 'take':
+                        if rap['outcome'] == 'fail':
+                                text = text + "failed in attempt to occupy territory. Take more bullets next time"
+                        else:
+                                text = text + "successfully taken a territory"
+                elif rap['action'] == 'take over':
+                        if rap['outcome'] == 'fail':
+                                text = text + "failed in attempt to take over a territory. Take more bullets next time"
+                        else:
+                                text = text + "successfully taken over a territory"
+                elif rap['action'] == 'attack':
+                        if rap['outcome'] == 'fail':
+                                text = text + "failed in attempt to attack the city. Take more bullets next time"
+                        else:
+                                spoils = rap['spoils']
+                                text = "Your attack was a succes. " + text + "You have taken " + spoils['wood'] + " wood, "
+                                text = text + spoils['berries'] + " berries, " + spoils['caps'] + " caps. Well done!"
+                rapList.append(text)
+
+        for defend in defendToReport:
+                if defend['action'] == 'take over':
+                        if defend['outcome'] == 'fail':
+                                text = "You have successfully defended your territory"
+                        else:
+                                text = "You have lost a battle for your territory. It was taken by another player"
+                elif defend['action'] == 'attack':
+                        if defend['outcome'] == 'fail':
+                                text = "You have successfully defended your territory"
+                        else:
+                                spoils = defend['spoils']
+                                text = "Your attack city was attacked and you were out of bullets. " + text + "You have lost " + spoils['wood'] + " wood, "
+                                text = text + spoils['berries'] + " berries, " + spoils['caps'] + " caps."
+                rapList.append(text)
+
+        return rapList
