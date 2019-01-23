@@ -1,5 +1,5 @@
 from db import buildings, players, user, worldMap, worlds, timestamps, session, database, actions
-from flask import jsonify
+
 
 def login(data):
     
@@ -12,7 +12,7 @@ def login(data):
     if user.is_correct_user(data['username'], data['password']):
             session.destroy_all_user_sessions(data['username'])
             my_session = session.create_session(data['username'])
-            actions.create_login_log(data['username'])
+           # actions.create_login_log(data['username'])
             return my_session['sessionID']
     else:
         return False
@@ -158,153 +158,64 @@ def upgrade_building(playerId, buildingId):
         actions.create_action(sendToActonTable)
         return updatedplayer, None
 
-def generate_resources(playerId):
-        player = players.player_read(playerId)
-        terytory_status= len(worldMap.get_square_status(player['world'], 'occupied', player['id']))
+def generate_pending(worldId, playerId):
+        pending = actions.get_uncompleted_actions(worldId, None, playerId)
+        pendingList = []
+        for rap in pending:
+                text = "You are "
+                if rap['action'] == 'buildingUpgrade':
+                        text = text + "upgrading " + rap['building']
+                elif rap['action'] == 'take':
+                        text = text + "trying to occupy territory"
+                elif rap['action'] == 'take over':
+                        text = text + "trying to take over a territory"
+                elif rap['action'] == 'attack':
+                        text = text + "trying to attack a city"
+                pendingList.append(text)
 
-        tartak = buildings.building_read(player['tartakId'])
-        bunkier = buildings.building_read(player['bunkierId'])
-        bank = buildings.building_read(player['sejfId'])
-        sklad = buildings.building_read(player['skladId'])
-        spizarnia= buildings.building_read(player['spizarniaId'])
-#trzeba dodac bonus za tereny
-        player['deski']= player['deski'] + (tartak['income'] * bunkier['income']*(1+player['actionPoints']) * 0.10) * (1 + terytory_status * 0.15)
-        player['kapsle']=player['kapsle'] + (bank['income'] * bunkier['income']*(1+player['actionPoints']) * 0.10) * (1 + terytory_status * 0.15)
-        player['naboje']=player['naboje'] + (sklad['income'] * bunkier['income']*(1+player['actionPoints']) * 0.10) * (1 + terytory_status * 0.15)
-        player['jagody']=player['jagody'] + (spizarnia['income'] * bunkier['income']*(1+player['actionPoints']) * 0.10) * (1 + terytory_status * 0.15)
-        player['actionPoints'] = 10
-        updatedplayer= players.player_update(player,player['id'])
-        return updatedplayer
+        return pendingList
 
-def calculate_world(world):
 
-        session.destroy_all_user_sessions()
-        oldActions = actions.get_to_report_actions(world)
-        contestedSquares = []
-        for action in oldActions:
-                action['status'] = 'completed'
-                actions.update_action(action, action['id'])
-
-        actionList = actions.get_uncompleted_actions(world)
-        #return actionList
-        for action in actionList:
-                action['data'] = timestamps.current_date()
-                if 'square' in action:
-                        if action['square'] in contestedSquares:
-                                continue
-                if 'player' in action:
-                        player = players.player_read(action['player'])
-                else:
-                        player = players.player_read(action['player1'])
-                if action['action'] == 'buildingUpgrade':
-                        if action['building'] == 'Bank':
-                                player['bank'] = player['bank'] +1
-                        if action['building'] == 'Armory':
-                                player['sklad'] = player['sklad'] +1
-                        if action['building'] == 'Pantry':
-                                player['spizarnia'] = player['spizarnia'] +1
-                        if action['building'] == 'Bunker':
-                                player['bunkier'] = player['bunkier'] +1
-                        if action['building'] == 'Lumber Mill':
-                                player['tartak'] = player['tartak'] +1
-                        player = players.player_update(player, player['id'])
-                        action['status'] = 'To report'
-                        actions.update_action(action, action['id'])
-                elif action['action'] == 'take':
-                        square = worldMap.read_square(action['square'])
-                        check = actions.check_if_double_take(square['id'])
-                        if check == False:
-                                square['owner'] = player['id']
-                                square['status'] = 'occupied'
-                                worldMap.update_square(square, square['id'])
-                                action['status'] = 'To report'
-                                action['outcome'] = 'success'
-                                actions.update_action(action, action['id'])
+def generate_raports(worldId, playerId):
+        toReport = actions.get_to_report_actions(worldId, playerId)
+        rapList = []
+        defendToReport = actions.get_defended_actions(worldId,playerId)
+        for rap in toReport:
+                text = "You have "
+                if rap['action'] == 'buildingUpgrade':
+                        text = text + "upgraded " + rap['building']
+                elif rap['action'] == 'take':
+                        if rap['outcome'] == 'fail':
+                                text = text + "failed in attempt to occupy territory. Take more bullets next time"
                         else:
-                                contestedSquares.append(square['id'])
-                                fight(check, square)
-                elif action['action'] == 'take over':
-                        take_over(action,player)
-                elif action['action'] == 'attack':
-                        attack_action(action,player)
+                                text = text + "successfully taken a territory"
+                elif rap['action'] == 'take over':
+                        if rap['outcome'] == 'fail':
+                                text = text + "failed in attempt to take over a territory. Take more bullets next time"
+                        else:
+                                text = text + "successfully taken over a territory"
+                elif rap['action'] == 'attack':
+                        if rap['outcome'] == 'fail':
+                                text = text + "failed in attempt to attack the city. Take more bullets next time"
+                        else:
+                                spoils = rap['spoils']
+                                text = "Your attack was a succes. " + text + "You have taken " + spoils['wood'] + " wood, "
+                                text = text + spoils['berries'] + " berries, " + spoils['caps'] + " caps. Well done!"
+                rapList.append(text)
 
-        playersList = players.get_players()
-        for player in playersList:
-                generate_resources(player['id'])
+        for defend in defendToReport:
+                if defend['action'] == 'take over':
+                        if defend['outcome'] == 'fail':
+                                text = "You have successfully defended your territory"
+                        else:
+                                text = "You have lost a battle for your territory. It was taken by another player"
+                elif defend['action'] == 'attack':
+                        if defend['outcome'] == 'fail':
+                                text = "You have successfully defended your territory"
+                        else:
+                                spoils = defend['spoils']
+                                text = "Your attack city was attacked and you were out of bullets. " + text + "You have lost " + spoils['wood'] + " wood, "
+                                text = text + spoils['berries'] + " berries, " + spoils['caps'] + " caps."
+                rapList.append(text)
 
-                   
-def take_over(action, player1):
-        square = worldMap.read_square(action['square'])
-        player2 = players.player_read(square['owner'])
-        action['status'] = 'To report'
-        action['player2'] = player2['id']
-        if action['bullets'] <= player2['naboje']:
-                action['outcome'] = 'fail'
-                player2['naboje'] = player2['naboje'] - action['bullets']
-                player2 = players.player_update(player2,player2['id'])
-        else:
-                action['outcome'] = 'success'
-                player2['naboje'] = 0
-                square['owner'] = player1['id']
-                player2 = players.player_update(player2,player2['id'])
-                worldMap.update_square(square, square['id'])
-        actions.update_action(action, action['id'])
-        
-def attack_action(action, player1):
-        square = worldMap.read_square(action['square'])
-        player2 = players.player_read(square['owner'])
-        action['status'] = 'To report'
-        action['player2'] = player2['id']
-        if action['bullets'] <= player2['naboje']:
-                action['outcome'] = 'fail'
-                player2['naboje'] = player2['naboje'] - action['bullets']
-        else:
-                action['outcome'] = 'success'
-                player2['naboje'] = 0
-                wood = 0.15 * player2['deski']
-                caps = 0.15 * player2['kapsle']
-                berries = 0.15 * player2['jagody']
-                player1['deski'] = wood
-                player1['jagody'] = berries
-                player1['kapsle'] = caps
-
-                player2['deski'] = player2['deski'] - wood
-                player2['jagody'] = player2['jagody'] - berries
-                player2['kapsle'] = player2['kapsle'] - caps
-                action['spoils'] = {
-                                "berries": berries,
-                                "caps": caps,
-                                "wood": wood
-                                }
-                
-        player2 = players.player_update(player2,player2['id'])
-        player1 = players.player_update(player1,player1['id'])
-        actions.update_action(action, action['id'])
-        
-def fight(square, fights):
-        maxBid = -1
-        maxBidder = None
-        tie = None
-        for fight in fights:
-                if fight['bullets'] > maxBid:
-                        maxBidder = fight['player']
-
-        for fight in fights:                        
-                if fight['bullets'] == maxBid and fight['player'] != maxBidder:
-                        tie = True
-
-        if not tie:
-                square['owner'] = maxBidder
-                square['status'] = 'occupied'
-                worldMap.update_square(square, square['id'])
-
-        for fight in fights:
-                fight['outcome'] = 'fail'
-                fight['status'] = 'To report'
-                fight['multi'] = True
-
-                if not tie:
-                        if fight['player'] == maxBidder:
-                                fight['outcome'] = 'success'
-
-                actions.update_action(fight,fight['id'])
+        return rapList

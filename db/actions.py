@@ -22,12 +22,14 @@ def update_action(data, id):
     ds.put(entity)
     return get_entity(entity)
 
-def get_uncompleted_actions(world, action = None):
+def get_uncompleted_actions(world, action = None, player = None):
     ds = get_client()
     query = ds.query(kind = 'Actions')
     if action is not None:
         query.add_filter('action', '=', action)
     query.add_filter('world', '=', str(world))
+    if player is not None:
+        query.add_filter('player', '=', player)
     query.add_filter('status', '=', 'uncompleted')
     results = []
     for entity in query.fetch():
@@ -41,6 +43,18 @@ def get_to_report_actions(world, player = None):
     query.add_filter('status', '=', 'To report')
     if player is not None:
         query.add_filter('player', '=', player)
+    results = []
+    for entity in query.fetch():
+        results.append(get_entity(entity))
+    return results
+
+def get_defended_actions(world, player):
+    ds = get_client()
+    query = ds.query(kind = 'Actions')
+    query.add_filter('world', '=', str(world))
+    query.add_filter('status', '=', 'To report')
+    query.add_filter('player2', '=', player)
+    
     results = []
     for entity in query.fetch():
         results.append(get_entity(entity))
@@ -64,15 +78,17 @@ def create_login_log(username):
     data['user'] = username
     data['time'] = current_timestamp
     ds = get_client()
-    key = ds.key(kind = 'Logins')
+    key = ds.key('Logs')
     entity = datastore.Entity(
         key=key,
     )
     entity.update(data)
     ds.put(entity)
 
+
 def get_login_logs():
     ds = get_client()
-    query = ds.query(kind = 'Logins')
+    query = ds.query(kind = 'Logs')
     results = list(query.fetch())
     return results
+
