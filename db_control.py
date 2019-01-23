@@ -75,6 +75,8 @@ def attack(player,square,bullets):
         return "Not enough action points", -1
     elif player['naboje'] < 100:
         return "Not enough bullets", -1
+    elif bullets < 100:
+        return "You need to use at least 100 bullets", -1
     elif int(player['naboje']) < int(bullets):
         return "Not enough bullets. You currently have " + str(player['naboje']) + ".", -1
     elif player['id'] == square['owner']:

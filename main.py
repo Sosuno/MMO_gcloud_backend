@@ -123,7 +123,7 @@ def get_player_profile(playerId):
 
     return jsonify(player = returnPlayer)
 
-@app.route("/game/player/world/attack", methods = ['POST'])
+@app.route("/game/attack", methods = ['POST'])
 def attack_square():
     user = request_check(request)
     if user == -1:
