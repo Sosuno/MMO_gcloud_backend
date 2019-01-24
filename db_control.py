@@ -1,4 +1,4 @@
-from db import buildings, players, user, worldMap, worlds, timestamps, session, database, actions
+from db import buildings, players, user, worldMap, worlds, timestamps, session, database, actions,logs
 
 
 def login(data):
@@ -12,7 +12,7 @@ def login(data):
     if user.is_correct_user(data['username'], data['password']):
             session.destroy_all_user_sessions(data['username'])
             my_session = session.create_session(data['username'])
-           # actions.create_login_log(data['username'])
+            logs.create_login_log(data['username'])
             return my_session['sessionID']
     else:
         return False

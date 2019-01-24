@@ -20,7 +20,7 @@ def generate_resources(playerId):
 
 def calculate_world(world):
 
-        session.destroy_all_user_sessions()
+        session.invalidate_all_user_sessions()
         oldActions = actions.get_to_report_actions(world)
         contestedSquares = []
         for action in oldActions:
