@@ -36,6 +36,32 @@ def destroy_all_user_sessions(username = None):
         key = ds.key('Session', int(r['id']))      
         ds.delete(key)
 
+def invalidate_all_user_sessions(username = None):
+    ds = get_client()
+    query = ds.query(kind = 'Session')
+    if username is not None:
+        query.add_filter('user', '=', username)
+    results = list(query.fetch())
+
+    for result in results:
+        r = get_entity(result)
+        r['status'] = 'inactive'
+        session_update(r, r['id'])
+
+        
+def session_update(data, id):
+    ds = get_client()
+    key = ds.key('Session', int(id))
+    entity = datastore.Entity(
+        key=key,
+        )
+    if 'id' in data:
+        del data['id']
+    entity.update(data)
+    ds.put(entity)
+    return get_entity(entity)
+
+
 def check_if_session_active(uuid):
     ds = get_client()
     query = ds.query(kind = 'Session')

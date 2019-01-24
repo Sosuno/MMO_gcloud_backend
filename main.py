@@ -11,6 +11,7 @@ CORS(app)
 
 controller = db_control
 
+
 @app.route("/signin", methods = ['POST'])
 def signin():
     content = request.get_json()
@@ -58,7 +59,7 @@ def create_world(world):
          world = db_control.create_world(world)
          return jsonify(newWorld = world)
     else:
-        return jsonify(msg = "No access, sir"), 401
+        return jsonify(msg = "No access, sir"), 403
 
 @app.route("/game/worlds/<worldId>", methods = ['GET'])
 def init_world(worldId):
@@ -84,7 +85,7 @@ def join_world(world, user = None, noCheck = False):
             return jsonify(msg = "Spierdolilam cos"), 500
         player = db_control.players.get_player(user['id'], world)
         if player is not None:
-            return jsonify(msg = "Already in"), 401
+            return jsonify(msg = "Already in"), 403
     data = {}
     data['username'] = user['username']
     data['world'] = world
@@ -162,9 +163,9 @@ def calculate_world():
     if not request.headers.get("X-Appengine-Cron"):
         user = request_check(request)
         if user == -1:
-            abort(401)
+            abort(403)
         if user['access'] != 'admin':
-            abort(401)
+            abort(403)
         
     worlds = controller.worlds.get_world(None, 'name')
     for world in worlds:

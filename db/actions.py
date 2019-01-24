@@ -54,7 +54,7 @@ def get_defended_actions(world, player):
     query.add_filter('world', '=', str(world))
     query.add_filter('status', '=', 'To report')
     query.add_filter('player2', '=', player)
-    
+
     results = []
     for entity in query.fetch():
         results.append(get_entity(entity))
@@ -72,23 +72,4 @@ def check_if_double_take(square):
         return False
     else:
         return results
-
-def create_login_log(username):
-    data = {}
-    data['user'] = username
-    data['time'] = current_timestamp
-    ds = get_client()
-    key = ds.key('Logs')
-    entity = datastore.Entity(
-        key=key,
-    )
-    entity.update(data)
-    ds.put(entity)
-
-
-def get_login_logs():
-    ds = get_client()
-    query = ds.query(kind = 'Logs')
-    results = list(query.fetch())
-    return results
 
