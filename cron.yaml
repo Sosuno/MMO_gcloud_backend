@@ -1,4 +1,5 @@
 cron:
-#- description: "Recount"
-#  url: /game/cron
-#  schedule: every 24 hours 24:00
+- description: "Recount"
+  url: /game/cron
+  schedule: every 24 hours 24:00
+ 
