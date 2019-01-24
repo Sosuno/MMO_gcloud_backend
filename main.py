@@ -178,17 +178,20 @@ def calculate_world():
 @app.route("/session", methods = [ 'GET' , 'DELETE' ])
 def sessions():
     user = request_check(request)
-    if user == -1:
-        return jsonify(session = False)
-    elif user == -2:
-        return jsonify(msg = "Spierdolilam cos"), 500
-    uuid = request.headers.get('Authorization')
     if request.method == 'GET':
+        if user == -1:
+            return abort(401)
+        uuid = request.headers.get('Authorization')
         if not db_control.session.check_if_session_active(uuid):
             return jsonify(session = False)
         else:
             return jsonify(session = True)
     else:
+        if user == -1:
+            return jsonify(session = False)
+        elif user == -2:
+            return jsonify(msg = "Spierdolilam cos"), 500
+        uuid = request.headers.get('Authorization')
         if not db_control.session.check_if_session_active(uuid):
             return jsonify(msg = "No session")
         db_control.session.destroy_all_user_sessions(uuid)
